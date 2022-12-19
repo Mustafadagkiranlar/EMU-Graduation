@@ -1,13 +1,13 @@
 import mysql.connector
 
-def save_palte(plate,name):
+def save_palte(plate,location,photo=""):
     connection = mysql.connector.connect(host='localhost',
                                     database='grad',
                                     user='root',
                                     password='Dagkiranlar')
     cursor = connection.cursor()
-    query = "INSERT INTO detections (text, plate) VALUES (%s,%s)"
-    values = (name,plate,photo)
+    query = "INSERT INTO detections (plate, photo_of_vehicle, location) VALUES (%s, %s, %s)"
+    values = (plate,photo,location)
     # Execute the query
     print(cursor.execute(query, values))
 
