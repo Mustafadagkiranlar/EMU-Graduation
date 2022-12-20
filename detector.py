@@ -3,7 +3,30 @@ from matplotlib import pyplot as plt
 import numpy as np
 import imutils
 import easyocr
+import legacy.connector as connector
+import schedule
+import mysql.connector
 
+past_plates = []
+
+def reset_plates():
+    past_plates.clear()
+
+def save_palte(plate,location,photo=""):
+    connection = mysql.connector.connect(host='localhost',
+                                    database='grad',
+                                    user='root',
+                                    password='Dagkiranlar')
+    cursor = connection.cursor()
+    query = "INSERT INTO detections (plate, photo_of_vehicle, location) VALUES (%s, %s, %s)"
+    values = (plate,photo,location)
+    # Execute the query
+    print(cursor.execute(query, values))
+
+    connection.commit()
+
+    connection.close()
+    cursor.close()
 
 def find_plate(frame):
 
@@ -39,22 +62,25 @@ def find_plate(frame):
 
         reader = easyocr.Reader(['en'])
         result = reader.readtext(cropped_image)
+        
         print(result)
-
-        if len(result)>0:
-            text = result[0][-2]
-            print(text)
+        plate=result[0][-2].upper()
+        if plate not in past_plates:
+            print("save plate")
+            save_palte(plate,"Computer Engineering department")
+            past_plates.append(plate)
     except:
         pass
         
 
 
 def main():
-    
+    schedule.every(5).minutes.do(reset_plates)
+
     cap = cv2.VideoCapture('sources/plate1.mp4')
 
     while(cap.isOpened()):
-
+        schedule.run_pending()
         # Capture frame-by-frame
         ret, frame = cap.read()
 
